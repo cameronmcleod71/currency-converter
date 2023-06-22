@@ -1,6 +1,7 @@
 ﻿using System;
+using CurrencyData;
 
-namespace MyApp // Note: actual namespace depends on the project name.
+namespace CurrencyConverter // Note: actual namespace depends on the project name.
 {
     internal class Program
     {
@@ -34,6 +35,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 }
                 
             }
+            ApiData MyData = new ApiData();
+            MyData.DeserializedCountryList();
+
+  
         }
 
         private Dictionary<string, string> getAvailableCountries()

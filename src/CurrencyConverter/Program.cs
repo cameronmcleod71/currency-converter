@@ -7,6 +7,11 @@ namespace CurrencyConverter // Note: actual namespace depends on the project nam
     {
         static void Main(string[] args)
         {
+            ApiData myData = new ApiData();
+            Program p = new Program();
+            Dictionary<String, String> countryList = p.GetAvailableCountries(myData);
+
+
             bool isFinished = false;
             string commandCode = "";
             Console.WriteLine("Welcome to Currency Converter made by cameronmcleod71!");
@@ -24,10 +29,45 @@ namespace CurrencyConverter // Note: actual namespace depends on the project nam
                         break;
                     case "1":
                         Console.WriteLine("Getting available Countries");
+                        foreach(KeyValuePair<string,string> kvp in countryList)
+                        {
+                            Console.WriteLine("Country: "+kvp.Value+ "Code: "+kvp.Key); 
+                            Console.WriteLine();              
+                        }
+                        if(countryList.Count == 0)
+                        {
+                            Console.WriteLine("Sorry, no countries currently available.");
+                        }
                         break;
                     case "2":
-                        Console.WriteLine("Note: you can use the convert command with a two country codes and a 9-digit currency.");
-                        Console.WriteLine("Example dotnet run CAD USD 9 // will convert 9 dollars CAD to USD");
+                        // Console.WriteLine("Note: you can use the convert command with a two country codes and a 9-digit currency.");
+                        // Console.WriteLine("Example dotnet run CAD USD 9 // will convert 9 dollars CAD to USD");
+                        try
+                        {
+                            Console.WriteLine("Please type a currency into the console:");
+                            string givenCurrency = Console.ReadLine();
+                            double currency = Double.Parse(givenCurrency);
+                            Console.WriteLine("");
+                            Console.WriteLine("Please enter the source currency code in capital letters:    Ex USD");
+                            string source = Console.ReadLine();
+                            KeyValuePair<bool, string> checkSource = p.VerifyCountryCode(source, countryList);
+                            if(checkSource.Key == false) throw new Exception("Please enter a valid country code");
+                            Console.WriteLine("");
+                            Console.WriteLine("Please enter the destination currency code in capital letters:    Ex CAD");
+                            string dest = Console.ReadLine();
+                            KeyValuePair<bool, string> checkDest = p.VerifyCountryCode(dest, countryList);
+                            if(checkSource.Key == false) throw new Exception("Please enter a valid country code");
+
+                            double convertedCurrency = p.GetConvertedCurrency(myData, source, dest, currency);
+                            if (convertedCurrency == 0) Console.WriteLine("Something went wrong during the conversion or the intitial currency was 0");
+                            Console.WriteLine("Converted Currency: "+convertedCurrency);
+
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+
+                        }
                         break;
                     default:
                         Console.WriteLine("Please enter a 1-digit command code listed above");
@@ -35,30 +75,37 @@ namespace CurrencyConverter // Note: actual namespace depends on the project nam
                 }
                 
             }
-            ApiData MyData = new ApiData();
-            MyData.DeserializedCountryList();
-
-  
         }
 
-        private Dictionary<string, string> getAvailableCountries()
+        private Dictionary<string, string> GetAvailableCountries(ApiData myData)
         {
-            return new Dictionary<string, string>{{"USD", "United States"}};
+            Dictionary<string, string> countryList = myData.DeserializedCountryList();
+            return countryList;
         }
 
-        private Dictionary<bool, string> verifyCountryCode(string currencyCode, Dictionary<string, string> countries)
+        private KeyValuePair<bool, string> VerifyCountryCode(string currencyCode, Dictionary<string, string> countryList)
         {
-            return new Dictionary<bool, string>{{false, "need to write func"}};
+            if (countryList.Keys.Contains(currencyCode))
+            {
+                return new KeyValuePair<bool, string>(true, "Country exists");
+            }
+            return new KeyValuePair<bool, string>(false, "Country does not exist");
         }
 
-        private Dictionary<bool, string> verifyCurrency(int currency) 
+        private KeyValuePair<bool, string> VerifyCurrency(int currency) 
         {
-            return new Dictionary<bool, string>{{false, "need to write func"}};
+            if (currency > 999_999_999)
+            {
+                return new KeyValuePair<bool, string>(false, "Please use a number below 999,999,999");
+            }  
+            return new KeyValuePair<bool, string>(true, "Country exists");
         }
 
-        private int getConvertedCurrency(int currency)
+        private double GetConvertedCurrency(ApiData myData, string sourceCode, string destCode,double currency)
         {
-            return 0;
+            double newCurrency = myData.RunConversion(sourceCode, destCode, currency);
+            return newCurrency;
+
         }
     }
 }

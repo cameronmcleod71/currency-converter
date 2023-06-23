@@ -32,4 +32,34 @@ public class ApiData
     return DeserializedCountryList;
 
   }
+
+  private async Task<string> GetConvertionRate(string sourceCode, string destCode)
+  {
+    string responseString = await client.GetStringAsync("https://api.freecurrencyapi.com/v1/latest?apikey=CQzKEmXlvuS0YbSdHkbV2mRSLMITJY8hWUjvi6OH&base_currency="+sourceCode+"&currencies="+destCode);
+    return responseString;
+  }
+
+  private double DeserializedConversionRate(string sourceCode, string destCode)
+  {
+    Task<string> data = GetConvertionRate(sourceCode, destCode);
+
+    var parseResults = JObject.Parse(data.Result);
+    string serialized = (string)parseResults["data"][destCode];
+    double conversionRate = 0.0;
+    try
+    {
+      conversionRate = Double.Parse(serialized);
+    }
+    catch(Exception e)
+    {
+      Console.WriteLine("ran into the following excepition:"+e);
+    }
+    return conversionRate;
+  }
+
+  public double RunConversion(string sourceCode, string destCode, double currency)
+  {
+    double conversionRate = DeserializedConversionRate(sourceCode, destCode);
+    return currency * conversionRate;
+  }
 }
